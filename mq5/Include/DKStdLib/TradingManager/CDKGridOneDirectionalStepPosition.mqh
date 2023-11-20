@@ -199,14 +199,13 @@ ulong CDKGridOneDirectionalStepPosition::OpenNext(const bool aIgnoreEntryCheck =
   }
   lotSize = m_symbol.NormalizeLot(lotSize);
   
-
-  if (Size() == 0) m_id = GetUniqueInstanceName(""); // Create new grid ID for 1st pos
+    if (Size() == 0) m_id = GetUniqueInstanceName(""); // Create new grid ID for 1st pos
   return CDKGridBase::OpenNext(m_symbol.Name(),
                                m_dir,
                                lotSize,
                                0, // Open by current price
                                0, // No SL
-                               0, // No TP. TP will set separatly by actual BE price
+                               0, // No TP
                                CDKGridBase::GetPosComment(m_comment_prefix, Size() + 1));
 }
 

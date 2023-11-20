@@ -209,7 +209,9 @@ void OnDeinit(const int reason) {
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick() {
-
+  m_grid_a.SetTPFromAverage();
+  m_grid_b.SetTPFromAverage();
+  m_grid_c.SetTPFromAverage();  
 }
 
 //+------------------------------------------------------------------+
@@ -222,38 +224,32 @@ void OnTimer() {
     m_grid_a.SetDirection(GetRSI(InpRSITimeFrameA));
 
   m_grid_a.OpenNext();
-  m_grid_a.SetTPFromAverage();
+  
 
   CDKPositionInfo pos;
   if (m_grid_a.Get(0, pos)) {
     if (InpEnabledB && TimeCurrent() >= pos.Time() + m_grid_b_sleep_till) {
        if (m_grid_b.Size() <= 0)
          m_grid_a.SetDirection(GetRSI(InpRSITimeFrameB));
-     
       m_grid_b.OpenNext();
-      m_grid_b.SetTPFromAverage();
+      
     }
     
     if (InpEnabledC && TimeCurrent() >= pos.Time() + m_grid_c_sleep_till) {
        if (m_grid_c.Size() <= 0)
          m_grid_a.SetDirection(GetRSI(InpRSITimeFrameC));
-     
       m_grid_c.OpenNext();
-      m_grid_c.SetTPFromAverage();
     }    
-  }
+  }    
 }
 
 void OnTrade() {
    m_grid_a.Clear();              
    m_grid_a.AddOpenPositions(InpMagicA);
-   Print(m_grid_a.Size());
    
    m_grid_b.Clear();              
    m_grid_b.AddOpenPositions(InpMagicB);
-   Print(m_grid_b.Size());
    
    m_grid_c.Clear();              
    m_grid_c.AddOpenPositions(InpMagicC);
-   Print(m_grid_c.Size());
 }
