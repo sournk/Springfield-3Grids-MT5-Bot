@@ -114,16 +114,25 @@ ENUM_POSITION_TYPE GetRSI(const ENUM_TIMEFRAMES aPeriod) {
 
 void ShowComment() {
   string text = StringFormat("\n"+
-                             "GRID A:\n"+
-                             "      ORDERS=%d\n"+  
-                             "GRID B:\n"+
-                             "      ORDERS=%d\n"+  
-                             "GRID C:\n"+
-                             "      ORDERS=%d\n",
+                             "GRID %s:\n"+
+                             "=======\n"+
+                             "%s\n\n"+                             
+                             "GRID %s:\n"+
+                             "=======\n"+
+                             "%s\n\n"+                             
+                             "GRID %s:\n"+
+                             "=======\n"+
+                             "%s\n\n",                                                    
+                             
+                             InpGridNameA,
+                             m_grid_a.GetDescription(),
+                             
+                             InpGridNameB,
+                             m_grid_b.GetDescription(),
+                             
+                             InpGridNameC,
+                             m_grid_c.GetDescription());
 
-                             m_grid_a.Size(),
-                             m_grid_b.Size(),
-                             m_grid_c.Size());
   Comment(text);
 }
 
@@ -154,6 +163,10 @@ int OnInit() {
    InitGrid(m_trade_b, InpMagicB, InpMaxSlippageB);
    InitGrid(m_trade_c, InpMagicC, InpMaxSlippageC);
    
+   m_grid_a.Init(_Symbol, GetRSI(InpRSITimeFrameA), InpMaxTradesA, InpLotsA, InpStepA, InpLotsExponentA, InpTakeProfitA, InpGridNameA, m_trade_a);
+   m_grid_b.Init(_Symbol, GetRSI(InpRSITimeFrameB), InpMaxTradesB, InpLotsB, InpStepB, InpLotsExponentB, InpTakeProfitB, InpGridNameB, m_trade_b);
+   m_grid_c.Init(_Symbol, GetRSI(InpRSITimeFrameC), InpMaxTradesC, InpLotsC, InpStepC, InpLotsExponentC, InpTakeProfitC, InpGridNameC, m_trade_c);
+   
    OnTrade(); // Load open positions   
    
    m_grid_b_sleep_till = (int)(InpOpenNewGridMaxDelaySec * MathRand() / 32768); 
@@ -181,24 +194,24 @@ void OnTimer() {
   ShowComment();
   
   if (m_grid_a.Size() <= 0) 
-    m_grid_a.Init(_Symbol, GetRSI(InpRSITimeFrameA), InpMaxTradesA, InpLotsA, InpStepA, InpLotsExponentA, InpTakeProfitA, InpGridNameA, m_trade_a);
+    m_grid_a.SetDirection(GetRSI(InpRSITimeFrameA));
 
   m_grid_a.OpenNext();
   m_grid_a.SetTPFromAverage();
 
-  CDKPositionInfo grid_a_last_pos;
-  if (m_grid_a.Get(0, grid_a_last_pos)) {
-    if (InpEnabledB && TimeCurrent() >= grid_a_last_pos.Time() + m_grid_b_sleep_till) {
+  CDKPositionInfo pos;
+  if (m_grid_a.Get(0, pos)) {
+    if (InpEnabledB && TimeCurrent() >= pos.Time() + m_grid_b_sleep_till) {
        if (m_grid_b.Size() <= 0)
-         m_grid_b.Init(_Symbol, GetRSI(InpRSITimeFrameB), InpMaxTradesB, InpLotsB, InpStepB, InpLotsExponentB, InpTakeProfitB, InpGridNameB, m_trade_b);
+         m_grid_a.SetDirection(GetRSI(InpRSITimeFrameB));
      
       m_grid_b.OpenNext();
       m_grid_b.SetTPFromAverage();
     }
     
-    if (InpEnabledC && TimeCurrent() >= grid_a_last_pos.Time() + m_grid_c_sleep_till) {
+    if (InpEnabledC && TimeCurrent() >= pos.Time() + m_grid_c_sleep_till) {
        if (m_grid_c.Size() <= 0)
-         m_grid_c.Init(_Symbol, GetRSI(InpRSITimeFrameC), InpMaxTradesC, InpLotsC, InpStepC, InpLotsExponentC, InpTakeProfitC, InpGridNameC, m_trade_c);
+         m_grid_a.SetDirection(GetRSI(InpRSITimeFrameC));
      
       m_grid_c.OpenNext();
       m_grid_c.SetTPFromAverage();
@@ -207,16 +220,15 @@ void OnTimer() {
 }
 
 void OnTrade() {
-   m_grid_a.Init(_Symbol, GetRSI(InpRSITimeFrameA), InpMaxTradesA, InpLotsA, InpStepA, InpLotsExponentA, InpTakeProfitA, InpGridNameA, m_trade_a);
    m_grid_a.Clear();              
    m_grid_a.AddOpenPositions(InpMagicA);
-   Print("SizeA: " + (string)m_grid_a.Size());
+   Print(m_grid_a.Size());
    
-   m_grid_b.Init(_Symbol, GetRSI(InpRSITimeFrameB), InpMaxTradesB, InpLotsB, InpStepB, InpLotsExponentB, InpTakeProfitB, InpGridNameB, m_trade_b);
    m_grid_b.Clear();              
    m_grid_b.AddOpenPositions(InpMagicB);
+   Print(m_grid_b.Size());
    
-   m_grid_c.Init(_Symbol, GetRSI(InpRSITimeFrameC), InpMaxTradesC, InpLotsC, InpStepC, InpLotsExponentC, InpTakeProfitC, InpGridNameC, m_trade_c);
    m_grid_c.Clear();              
    m_grid_c.AddOpenPositions(InpMagicC);
+   Print(m_grid_c.Size());
 }
