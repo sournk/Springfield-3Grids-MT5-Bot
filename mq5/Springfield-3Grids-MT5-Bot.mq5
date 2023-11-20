@@ -17,15 +17,15 @@ input     group                    "1. GRID A"
 input     uint                     InpMaxTradesA                        = 5;                                    // MaxTrades: Max grid size
 input     double                   InpLotsA                             = 0.1;                                  // Lots: Initial grid order lots size
 input     double                   InpLotsExponentA                     = 1.5;                                  // LotsExponent: Next grid order volume ratio
-input     uint                     InpStepA                             = 30;                                  // Step: Price distance to open next grid order, points
-input     uint                     InpTakeProfitA                       = 50;                                  // Take Profit: Distance from grid Break Even, points
+input     uint                     InpStepA                             = 300;                                  // Step: Price distance to open next grid order, points
+input     uint                     InpTakeProfitA                       = 300;                                  // Take Profit: Distance from grid Break Even, points
 input     ENUM_TIMEFRAMES          InpRSITimeFrameA                     = PERIOD_M1;                            // RSI timeframe
 input     ulong                    InpMaxSlippageA                      = 2;                                    // Max slippage for market operations, points
 input     long                     InpMagicA                            = 2023111901;                           // Magic number of the grid
           string                   InpGridNameA                         = "A";                                  // Grid A name
 
 input     group                    "2. GRID B"
-input     bool                     InpEnabledB                          = false;                                 // Grid enabled
+input     bool                     InpEnabledB                          = true;                                 // Grid enabled
 input     uint                     InpMaxTradesB                        = 5;                                    // MaxTrades: Max grid size
 input     double                   InpLotsB                             = 0.1;                                  // Lots: Initial grid order lots size
 input     double                   InpLotsExponentB                     = 1.5;                                  // LotsExponent: Next grid order volume ratio
@@ -37,7 +37,7 @@ input     long                     InpMagicB                            = 202311
           string                   InpGridNameB                         = "B";                                  // Grid B name
           
 input     group                    "3. GRID C"
-input     bool                     InpEnabledC                          = false;                                 // Grid enabled
+input     bool                     InpEnabledC                          = true;                                 // Grid enabled
 input     uint                     InpMaxTradesC                        = 5;                                    // MaxTrades: Max grid size
 input     double                   InpLotsC                             = 0.1;                                  // Lots: Initial grid order lots size
 input     double                   InpLotsExponentC                     = 1.5;                                  // LotsExponent: Next grid order volume ratio
