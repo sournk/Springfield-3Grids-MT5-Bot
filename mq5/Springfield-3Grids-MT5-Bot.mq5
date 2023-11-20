@@ -4,7 +4,23 @@
 //|                                             https://kislitsyn.me |
 //+------------------------------------------------------------------+
 
+// Put nubmer of account to use only with in line bellow right eq sign.
+// Example 1: string LICENCE_FOR_ACCOUNT = 12345678; <-- Only for 12345678 acccount
+// Example 2: string LICENCE_FOR_ACCOUNT = 0; No any limits
+long LICENSE_FOR_ACCOUNT = 0;
+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//| Don't touch anything bellow
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+//+------------------------------------------------------------------+
+
 #include <Trade\Trade.mqh>
+#include <Trade\AccountInfo.mqh>
 
 #include "Include\DKStdLib\Common\DKStdLib.mqh"
 #include "Include\DKStdLib\Logger\DKLogger.mqh"
@@ -41,8 +57,8 @@ input     bool                     InpEnabledC                          = true; 
 input     uint                     InpMaxTradesC                        = 5;                                    // MaxTrades: Max grid size
 input     double                   InpLotsC                             = 0.1;                                  // Lots: Initial grid order lots size
 input     double                   InpLotsExponentC                     = 1.5;                                  // LotsExponent: Next grid order volume ratio
-input     uint                     InpStepC                             = 30;                                  // Step: Price distance to open next grid order, points
-input     uint                     InpTakeProfitC                       = 50;                                  // Take Profit: Distance from grid Break Even, points
+input     uint                     InpStepC                             = 300;                                  // Step: Price distance to open next grid order, points
+input     uint                     InpTakeProfitC                       = 300;                                  // Take Profit: Distance from grid Break Even, points
 input     ENUM_TIMEFRAMES          InpRSITimeFrameC                     = PERIOD_D1;                            // RSI timeframe
 input     ulong                    InpMaxSlippageC                      = 2;                                    // Max slippage for market operations, points
 input     long                     InpMagicC                            = 2023111903;                           // Magic number of the grid
@@ -148,11 +164,20 @@ int OnInit() {
    m_logger.Level = InpLogLevel;
    if(MQL5InfoInteger(MQL5_DEBUGGING)) m_logger.Level = LogLevel(DEBUG);  
    
+   // Check exp. date
    string expar = (string)InpReleaseDate;
    if (TimeCurrent() > StringToTime(expar) + 31 * 24 * 60 * 60) {
      MessageBox("Developer version is expired", "Error", MB_OK && MB_ICONERROR);
      return(INIT_FAILED);
    }   
+   
+   CAccountInfo account;
+   // Check aacount licence
+   if (LICENSE_FOR_ACCOUNT != 0)
+    if (LICENSE_FOR_ACCOUNT != account.Login()) {
+         MessageBox("You can not you bot with your account!", "Error", MB_OK && MB_ICONERROR);
+     return(INIT_FAILED);   
+   }
    
    if (InpMagicA == InpMagicB || InpMagicA == InpMagicC || InpMagicB == InpMagicC) {
      MessageBox("Put different Magic for all grids", "Error", MB_OK && MB_ICONERROR);
