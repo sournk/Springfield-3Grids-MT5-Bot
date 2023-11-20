@@ -25,7 +25,7 @@ long LICENSE_FOR_ACCOUNT = 0;
 #include "Include\DKStdLib\Common\DKStdLib.mqh"
 #include "Include\DKStdLib\Logger\DKLogger.mqh"
 
-#include "Include\DKStdLib\TradingManager\CDKGridOneDirectionalStepPosition.mqh"
+#include "Include\DKStdLib\TradingManager\CDKGridOneDirStepPos.mqh"
 
 #property script_show_inputs
 
@@ -74,15 +74,17 @@ sinput    LogLevel                 InpLogLevel                          = LogLev
           string                   BOT_GLOBAL_PREFIX                    = "SF";                                 // Global Prefix
 
 
-DKLogger                           m_logger;
+DKLogger                           m_logger_a;
+DKLogger                           m_logger_b;
+DKLogger                           m_logger_c;
 
 CTrade                             m_trade_a;
 CTrade                             m_trade_b;
 CTrade                             m_trade_c;
 
-CDKGridOneDirectionalStepPosition  m_grid_a;
-CDKGridOneDirectionalStepPosition  m_grid_b;
-CDKGridOneDirectionalStepPosition  m_grid_c;
+CDKGridOneDirStepPos               m_grid_a;
+CDKGridOneDirStepPos               m_grid_b;
+CDKGridOneDirStepPos               m_grid_c;
 
 int                                m_grid_b_sleep_till;
 int                                m_grid_c_sleep_till;
@@ -130,23 +132,26 @@ ENUM_POSITION_TYPE GetRSI(const ENUM_TIMEFRAMES aPeriod) {
 
 void ShowComment() {
   string text = StringFormat("\n"+
-                             "GRID %s:\n"+
+                             "GRID %s (%s):\n"+
                              "=======\n"+
                              "%s\n\n"+                             
-                             "GRID %s:\n"+
+                             "GRID %s (%s):\n"+
                              "=======\n"+
                              "%s\n\n"+                             
-                             "GRID %s:\n"+
+                             "GRID %s (%s):\n"+
                              "=======\n"+
                              "%s\n\n",                                                    
                              
                              InpGridNameA,
+                             m_grid_a.GetID(),
                              m_grid_a.GetDescription(),
                              
                              InpGridNameB,
+                             m_grid_b.GetID(),
                              m_grid_b.GetDescription(),
                              
                              InpGridNameC,
+                             m_grid_c.GetID(),
                              m_grid_c.GetDescription());
 
   Comment(text);
@@ -160,9 +165,15 @@ int OnInit() {
    
    EventSetTimer(1);
    
-   m_logger.Name = BOT_GLOBAL_PREFIX;
-   m_logger.Level = InpLogLevel;
-   if(MQL5InfoInteger(MQL5_DEBUGGING)) m_logger.Level = LogLevel(DEBUG);  
+   m_logger_a.Name = BOT_GLOBAL_PREFIX + ":" + InpGridNameA;
+   m_logger_a.Level = InpLogLevel;
+   if(MQL5InfoInteger(MQL5_DEBUGGING)) m_logger_a.Level = LogLevel(DEBUG);  
+
+   m_logger_b.Name = BOT_GLOBAL_PREFIX + ":" + InpGridNameB;
+   m_logger_b.Level = m_logger_a.Level;
+
+   m_logger_c.Name = BOT_GLOBAL_PREFIX + ":" + InpGridNameC;
+   m_logger_c.Level = m_logger_a.Level;
    
    // Check exp. date
    string expar = (string)InpReleaseDate;
@@ -188,10 +199,14 @@ int OnInit() {
    InitGrid(m_trade_b, InpMagicB, InpMaxSlippageB);
    InitGrid(m_trade_c, InpMagicC, InpMaxSlippageC);
    
+   m_grid_a.SetLogger(GetPointer(m_logger_a));
+   m_grid_b.SetLogger(GetPointer(m_logger_b));
+   m_grid_c.SetLogger(GetPointer(m_logger_c));
+
    m_grid_a.Init(_Symbol, GetRSI(InpRSITimeFrameA), InpMaxTradesA, InpLotsA, InpStepA, InpLotsExponentA, InpTakeProfitA, InpGridNameA, m_trade_a);
    m_grid_b.Init(_Symbol, GetRSI(InpRSITimeFrameB), InpMaxTradesB, InpLotsB, InpStepB, InpLotsExponentB, InpTakeProfitB, InpGridNameB, m_trade_b);
    m_grid_c.Init(_Symbol, GetRSI(InpRSITimeFrameC), InpMaxTradesC, InpLotsC, InpStepC, InpLotsExponentC, InpTakeProfitC, InpGridNameC, m_trade_c);
-   
+
    OnTrade(); // Load open positions   
    
    m_grid_b_sleep_till = (int)(InpOpenNewGridMaxDelaySec * MathRand() / 32768); 
@@ -210,8 +225,8 @@ void OnDeinit(const int reason) {
 //+------------------------------------------------------------------+
 void OnTick() {
   m_grid_a.SetTPFromAverage();
-  m_grid_b.SetTPFromAverage();
-  m_grid_c.SetTPFromAverage();  
+  if (InpEnabledB) m_grid_b.SetTPFromAverage();
+  if (InpEnabledC) m_grid_c.SetTPFromAverage();  
 }
 
 //+------------------------------------------------------------------+
@@ -230,14 +245,14 @@ void OnTimer() {
   if (m_grid_a.Get(0, pos)) {
     if (InpEnabledB && TimeCurrent() >= pos.Time() + m_grid_b_sleep_till) {
        if (m_grid_b.Size() <= 0)
-         m_grid_a.SetDirection(GetRSI(InpRSITimeFrameB));
+         m_grid_b.SetDirection(GetRSI(InpRSITimeFrameB));
       m_grid_b.OpenNext();
       
     }
     
     if (InpEnabledC && TimeCurrent() >= pos.Time() + m_grid_c_sleep_till) {
        if (m_grid_c.Size() <= 0)
-         m_grid_a.SetDirection(GetRSI(InpRSITimeFrameC));
+         m_grid_c.SetDirection(GetRSI(InpRSITimeFrameC));
       m_grid_c.OpenNext();
     }    
   }    
@@ -245,11 +260,11 @@ void OnTimer() {
 
 void OnTrade() {
    m_grid_a.Clear();              
-   m_grid_a.AddOpenPositions(InpMagicA);
+   m_grid_a.Load(InpMagicA);
    
    m_grid_b.Clear();              
-   m_grid_b.AddOpenPositions(InpMagicB);
+   m_grid_b.Load(InpMagicB);
    
    m_grid_c.Clear();              
-   m_grid_c.AddOpenPositions(InpMagicC);
+   m_grid_c.Load(InpMagicC);
 }
