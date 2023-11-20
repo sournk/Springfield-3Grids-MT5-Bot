@@ -37,6 +37,8 @@ public:
                          CTrade& Trade);                                     // Preconfigurated CTrade
                          
   uint              AddOpenPositions(const long aMagic);                     // Load all open positions by Magic                         
+  
+  void              SetDirection(const ENUM_POSITION_TYPE aDirection);       // Set grid direction. WARNING: Change sirection of non empty grid is dangerous
                            
   void              SetDefaultStep(const int aStepPoint);                    // Set default step in point to next position
   void              SetStep(const uint aGridSize, const int aStepPoint);     // Set step in point to every position. Step set for next order when grid size = aGridSize
@@ -98,6 +100,17 @@ uint CDKGridOneDirectionalStepPosition::AddOpenPositions(const long aMagic) {
   
   return Size();
 }
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
+void CDKGridOneDirectionalStepPosition::SetDirection(const ENUM_POSITION_TYPE aDirection){
+  m_dir = aDirection;
+} 
+
+//+------------------------------------------------------------------+
+//|                                                                  |
+//+------------------------------------------------------------------+
 
 void CDKGridOneDirectionalStepPosition::SetDefaultStep(const int aStepPoint) {
   m_step_default = aStepPoint;
@@ -194,10 +207,7 @@ ulong CDKGridOneDirectionalStepPosition::OpenNext(const bool aIgnoreEntryCheck =
                                0, // Open by current price
                                0, // No SL
                                0, // No TP. TP will set separatly by actual BE price
-                               StringFormat("%s|%s|%d", 
-                                            m_comment_prefix, 
-                                            m_id, 
-                                            Size() + 1));
+                               CDKGridBase::GetPosComment(m_comment_prefix, Size() + 1));
 }
 
 bool CDKGridOneDirectionalStepPosition::SetTPFromAverage() {
