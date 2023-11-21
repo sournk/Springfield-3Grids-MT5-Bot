@@ -144,15 +144,15 @@ void ShowComment() {
                              
                              InpGridNameA,
                              m_grid_a.GetID(),
-                             m_grid_a.GetDescription(),
+                             StringFormat("Dir: %s\n", EnumToString(m_grid_a.GetDirection())) + m_grid_a.GetDescription(),
                              
                              InpGridNameB,
                              m_grid_b.GetID(),
-                             m_grid_b.GetDescription(),
+                             StringFormat("Dir: %s\n", EnumToString(m_grid_b.GetDirection())) + m_grid_b.GetDescription() + StringFormat("Seed: %.1f\n", m_grid_b_sleep_till / 60),
                              
                              InpGridNameC,
                              m_grid_c.GetID(),
-                             m_grid_c.GetDescription());
+                             StringFormat("Dir: %s\n", EnumToString(m_grid_c.GetDirection())) + m_grid_c.GetDescription() + StringFormat("Seed: %.1f\n", m_grid_c_sleep_till / 60));
 
   Comment(text);
 }
@@ -224,22 +224,13 @@ void OnDeinit(const int reason) {
 //| Expert tick function                                             |
 //+------------------------------------------------------------------+
 void OnTick() {
-  m_grid_a.SetTPFromAverage();
-  if (InpEnabledB) m_grid_b.SetTPFromAverage();
-  if (InpEnabledC) m_grid_c.SetTPFromAverage();  
-}
-
-//+------------------------------------------------------------------+
-//| Timer function                                                   |
-//+------------------------------------------------------------------+
-void OnTimer() {
   ShowComment();
   
   if (m_grid_a.Size() <= 0) 
     m_grid_a.SetDirection(GetRSI(InpRSITimeFrameA));
-
-  m_grid_a.OpenNext();
   
+  m_grid_a.OpenNext();
+  m_grid_a.SetTPFromAverage();
 
   CDKPositionInfo pos;
   if (m_grid_a.Get(0, pos)) {
@@ -255,16 +246,32 @@ void OnTimer() {
          m_grid_c.SetDirection(GetRSI(InpRSITimeFrameC));
       m_grid_c.OpenNext();
     }    
-  }    
+  }  
+  
+  if (InpEnabledB) m_grid_b.SetTPFromAverage();
+  if (InpEnabledC) m_grid_c.SetTPFromAverage();  
+}
+
+//+------------------------------------------------------------------+
+//| Timer function                                                   |
+//+------------------------------------------------------------------+
+void OnTimer() {
+  
 }
 
 void OnTrade() {
-   m_grid_a.Clear();              
-   m_grid_a.Load(InpMagicA);
+  if (m_grid_a.OpenPosCount(InpMagicA) != m_grid_a.Size()) {
+     m_grid_a.Clear();              
+     m_grid_a.Load(InpMagicA);
+   }
    
-   m_grid_b.Clear();              
-   m_grid_b.Load(InpMagicB);
+  if (m_grid_b.OpenPosCount(InpMagicB) != m_grid_b.Size()) {
+     m_grid_b.Clear();              
+     m_grid_b.Load(InpMagicB);
+   }
    
-   m_grid_c.Clear();              
-   m_grid_c.Load(InpMagicC);
+  if (m_grid_c.OpenPosCount(InpMagicC) != m_grid_c.Size()) {
+     m_grid_c.Clear();              
+     m_grid_c.Load(InpMagicC);
+   }
 }
