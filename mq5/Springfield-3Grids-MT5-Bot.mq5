@@ -4,11 +4,6 @@
 //|                                             https://kislitsyn.me |
 //+------------------------------------------------------------------+
 
-// Put nubmer of account to use only with in line bellow right eq sign.
-// Example 1: string LICENCE_FOR_ACCOUNT = 12345678; <-- Only for 12345678 acccount
-// Example 2: string LICENCE_FOR_ACCOUNT = 0; No any limits
-long LICENSE_FOR_ACCOUNT = 0;
-
 //+------------------------------------------------------------------+
 //+------------------------------------------------------------------+
 //+------------------------------------------------------------------+
@@ -26,8 +21,13 @@ long LICENSE_FOR_ACCOUNT = 0;
 #include "Include\DKStdLib\Logger\DKLogger.mqh"
 
 #include "Include\DKStdLib\TradingManager\CDKGridOneDirStepPos.mqh"
+#include "Include\DKStdLib\License\DKLicense.mqh"
 
 #property script_show_inputs
+
+input     group                    "0. LICENSE"
+          string                   InpLicenseSalt  = "Springfield-3Grids-MT5-Bot.v1.mq5";                       // Salt
+input     string                   InpLicenseKey;                                                               // Put here you license key with no sapces and line breaks
 
 input     group                    "1. GRID A"
 input     uint                     InpMaxTradesA                        = 5;                                    // MaxTrades: Max grid size
@@ -161,6 +161,20 @@ void ShowComment() {
 //| Expert initialization function                                   |
 //+------------------------------------------------------------------+
 int OnInit() {
+   // Check exp. date
+   string expar = (string)InpReleaseDate;
+   if (TimeCurrent() > StringToTime(expar) + 31 * 24 * 60 * 60) {
+     MessageBox("Developer version is expired", "Error", MB_OK | MB_ICONERROR);
+     return(INIT_FAILED);
+   }  
+
+   // Check license
+   CAccountInfo account;
+   if (!IsLicenseValid(InpLicenseKey, account.Login(), InpLicenseSalt)) {
+     MessageBox("Your license key is invalid", "Error", MB_OK | MB_ICONERROR);
+     return(INIT_FAILED);
+   }    
+
    MathSrand(GetTickCount());
    
    EventSetTimer(1);
@@ -175,22 +189,7 @@ int OnInit() {
    m_logger_c.Name = BOT_GLOBAL_PREFIX + ":" + InpGridNameC;
    m_logger_c.Level = m_logger_a.Level;
    
-   // Check exp. date
-   string expar = (string)InpReleaseDate;
-   if (TimeCurrent() > StringToTime(expar) + 31 * 24 * 60 * 60) {
-     MessageBox("Developer version is expired", "Error", MB_OK && MB_ICONERROR);
-     return(INIT_FAILED);
-   }   
-   
-   CAccountInfo account;
-   // Check aacount licence
-   if (LICENSE_FOR_ACCOUNT != 0)
-    if (LICENSE_FOR_ACCOUNT != account.Login()) {
-         MessageBox("You can not you bot with your account!", "Error", MB_OK && MB_ICONERROR);
-     return(INIT_FAILED);   
-   }
-   
-   if (InpMagicA == InpMagicB || InpMagicA == InpMagicC || InpMagicB == InpMagicC) {
+    if (InpMagicA == InpMagicB || InpMagicA == InpMagicC || InpMagicB == InpMagicC) {
      MessageBox("Put different Magic for all grids", "Error", MB_OK && MB_ICONERROR);
      return(INIT_FAILED);   
    }
