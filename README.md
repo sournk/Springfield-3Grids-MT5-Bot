@@ -17,12 +17,11 @@ The bot maintains a take profit on all its positions at a specified distance fro
 
 ![Inputs Dialog](img/0002.%20Result%20settings.png)
 
-Для каждой сетки применяются следующие параметры:
-1. MaxTrades: Max grid size.
-2. Lots: Initial grid order lots size.
-3. LotsExponent: Next grid order volume ratio.
-4. Step: Price distance to open next grid order, points.
-6. Take Profit: Distance from grid breakeven, points.
-7. RSI timeframe.
-
+There is a list of settings for every grid:
+1. **MaxTrades**: Max grid size.
+2. **Lots**: Initial grid order lots size.
+3. **LotsExponent**: Next grid order volume ratio.
+4. **Step**: Price distance to open next grid order, points.
+6. **Take Profit**: Distance from grid breakeven, points.
+7. **RSI timeframe**. Used to detect direction of first position of the grid. It's recommended to use different TF for every grid. In this case the bot will open grids in different directions with a higher probability. Other RSI params is the same for all grids. You can change them in MISC section.
 
