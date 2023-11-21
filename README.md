@@ -1,4 +1,8 @@
 # Springfield-3Grids-MT5-Bot
+
+MQL5 Task: [207191](https://www.mql5.com/en/job/207191)
+Requirements read in [requirements.md](requirements.md).
+
 The Springfield bot is an expert advisor for MetaTrader 5. It implements a grid algorithm with increasing volume for the next opened position at a set price distance.
 
 The bot can simultaneously manage 3 grids on a single instrument with different parameters. 
